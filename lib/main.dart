@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
   static const platform = MethodChannel('samples.flutter.dev/battery');
   String _batteryLevel = 'Unknown battery level.';
 
-  Future<void> _getatteryLevel() async {
+  Future<void> _getBatteryLevel() async {
     String batteryLevel;
     try {
       final result = await platform.invokeMethod<int>('getBatteryLevel');
@@ -111,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              onPressed: _getatteryLevel,
+              onPressed: _getBatteryLevel,
               child: const Text('Get Battery Level'),
             ),
             Text('battery level: $_batteryLevel'),
