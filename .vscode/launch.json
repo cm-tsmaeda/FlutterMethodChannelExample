@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "staging debug",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "args": [
+                "--dart-define-from-file=config/staging.json",
+                "--flavor=staging"
+            ]
+        },
+        {
+            "name": "production debug",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "args": [
+                "--dart-define-from-file=config/production.json",
+                "--flavor=production"
+            ]
+        }
+    ]
+}
