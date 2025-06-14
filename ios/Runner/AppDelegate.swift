@@ -2,13 +2,16 @@ import Flutter
 import UIKit
 
 enum ChannelName: String {
-    case batttery = "samples.flutter.dev/battery"
-    case charging = "samples.flutter.dev/charging"
+    case battery = "samples.flutter.dev/battery"
+    case addition = "samples.flutter.dev/addition"
 }
 
-enum BatteryState: String {
-    case charging = "charging"
-    case discharging = "discharging"
+enum BatteryMethod: String {
+    case getBatteryLevel
+}
+
+enum AdditionMethod: String {
+    case add
 }
 
 enum MyFlutterErrorCode: String {
@@ -23,22 +26,65 @@ enum MyFlutterErrorCode: String {
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
     
-      guard let controller = window?.rootViewController as? FlutterViewController else {
-          fatalError("rootViewController is not type FlutterViewController")
-      }
-      
-      let batteryChannel = FlutterMethodChannel(name: ChannelName.batttery.rawValue, binaryMessenger: controller.binaryMessenger)
-      batteryChannel.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
-          guard call.method == "getBatteryLevel" else {
-              result(FlutterMethodNotImplemented)
-              return
-          }
-          self?.receiveBatteryLevel(result: result)
-      }
-      print("bbbb")
+      setupFlutterMethodChannels()
       
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+    
+    private func setupFlutterMethodChannels() {
+        guard let controller = window?.rootViewController as? FlutterViewController else {
+            fatalError("rootViewController is not type FlutterViewController")
+        }
+        
+        let batteryChannel = FlutterMethodChannel(
+          name: ChannelName.battery.rawValue,
+          binaryMessenger: controller.binaryMessenger)
+        batteryChannel.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
+            switch call.method {
+            case BatteryMethod.getBatteryLevel.rawValue:
+                self?.receiveBatteryLevel(result: result)
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+        
+        let additionChannel = FlutterMethodChannel(
+          name: ChannelName.addition.rawValue,
+          binaryMessenger: controller.binaryMessenger)
+        additionChannel.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: FlutterResult) -> Void in
+            switch call.method {
+            case AdditionMethod.add.rawValue:
+                self?.callFlutterAdd(channel: additionChannel)
+                result(true)
+            default:
+                result(FlutterMethodNotImplemented)
+            }
+        }
+    }
+    
+    private func callFlutterAdd(channel: FlutterMethodChannel) {
+        let num1 = 35
+        let num2 = 8
+        channel.invokeMethod("add", arguments: [num1, num2]) { [weak self] result in
+            var resultStr = "no result"
+            if let result {
+                resultStr = "result: \(num1) + \(num2) = \(result)"
+            }
+            self?.showAlert(text: resultStr)
+        }
+    }
+    
+    private func showAlert(text: String) {
+        guard let controller = window?.rootViewController as? FlutterViewController else {
+            fatalError("rootViewController is not type FlutterViewController")
+        }
+        let action = UIAlertAction(title: "OK", style: .default) { _ in
+            
+        }
+        let alert = UIAlertController(title: "add result", message: text, preferredStyle: .alert)
+        alert.addAction(action)
+        controller.present(alert, animated: true)
+    }
     
     private func receiveBatteryLevel(result: FlutterResult) {
         let device = UIDevice.current
