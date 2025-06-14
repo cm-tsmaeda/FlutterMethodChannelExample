@@ -11,13 +11,15 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
+import android.widget.Toast
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "samples.flutter.dev/battery"
+    private val BATTERY_CHANNEL = "samples.flutter.dev/battery"
+    private val ADDITION_CHANNEL = "samples.flutter.dev/addition"
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BATTERY_CHANNEL).setMethodCallHandler {
             call, result ->
             if (call.method == "getBatteryLevel") {
                 val batteryLevel = getBatteryLevel()
@@ -27,6 +29,15 @@ class MainActivity : FlutterActivity() {
                 } else {
                     result.error("UNAVAILABLE", "Battery level not available.", null)
                 }
+            } else {
+                result.notImplemented()
+            }
+        }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ADDITION_CHANNEL).setMethodCallHandler {
+                call, result ->
+            if (call.method == "add") {
+                add(flutterEngine)
+                result.success(true)
             } else {
                 result.notImplemented()
             }
@@ -44,5 +55,31 @@ class MainActivity : FlutterActivity() {
         }
 
         return batteryLevel
+    }
+
+    private fun add(@NonNull flutterEngine: FlutterEngine) {
+        val channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, ADDITION_CHANNEL)
+        val num1: Int = 35
+        val num2: Int = 8
+        channel.invokeMethod("add", intArrayOf(num1, num2), object : MethodChannel.Result {
+            override fun success(result: Any?) {
+                if (result != null) {
+                    val text = "result: $num1 + $num2 = $result"
+                    showToast(text)
+                }
+            }
+
+            override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+                // Handle error if needed
+            }
+
+            override fun notImplemented() {
+                // Handle not implemented if needed
+            }
+        })
+    }
+
+    private fun showToast(text: String) {
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show()
     }
 }
